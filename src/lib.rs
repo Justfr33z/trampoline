@@ -1,4 +1,5 @@
 pub use error::*;
+pub use hook::{TrampolineHook, Hook};
 
 mod error;
 mod hook;
