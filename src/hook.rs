@@ -6,7 +6,7 @@ pub struct Hook;
 pub struct TrampolineHook;
 
 impl Hook {
-    pub fn hook(src: *mut c_void, dst: *const c_void, len: usize) -> Result<Self> {
+    pub fn hook(src: *mut c_void, dst: *mut c_void, len: usize) -> Result<Self> {
         todo!()
     }
 
@@ -20,7 +20,7 @@ impl Hook {
 }
 
 impl TrampolineHook {
-    pub fn hook(src: *mut c_void, dst: *const c_void, len: usize) -> Result<Self> {
+    pub fn hook(src: *mut c_void, dst: *mut c_void, len: usize) -> Result<Self> {
         todo!()
     }
 
