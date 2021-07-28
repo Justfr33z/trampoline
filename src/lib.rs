@@ -1,3 +1,5 @@
+//! trampoline - A Rust library for function hooking that supports both 32 and 64 bit.
+
 pub use error::*;
 pub use hook::{TrampolineHook, Hook};
 

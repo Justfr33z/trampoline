@@ -12,6 +12,13 @@ use crate::bindings::Windows::Win32::System::Memory::{
 use std::ffi::c_void;
 use std::ptr::{copy_nonoverlapping, write_bytes};
 
+/// A 32 or 64 bit hook.
+///
+/// After creating a `Hook` by [`hook`]ing a function, it redirects the control flow.
+///
+/// The function will be unhooked when the value is dropped.
+///
+/// [`hook`]: #method.hook
 pub struct Hook {
     src: *mut c_void,
     len: usize,
@@ -19,12 +26,27 @@ pub struct Hook {
     active: bool,
 }
 
+
+/// A 32 or 64 bit trampoline hook.
+///
+/// After creating a `TrampolineHook` by [`hook`]ing a function, it redirects the control flow.
+///
+/// The function will be unhooked when the value is dropped.
+///
+/// [`hook`]: #method.hook
 pub struct TrampolineHook {
     gateway: *mut c_void,
     hook: Hook,
 }
 
 impl Hook {
+    /// Hooks a function.
+    ///
+    /// `src` is the function to be hooked.
+    ///
+    /// `dst` is the destination of the hook.
+    ///
+    /// `len` is the amount of bytes that should be overridden.
     pub fn hook(src: *mut c_void, dst: *mut c_void, len: usize) -> Result<Self> {
         if len < JMP_SIZE {
             return Err(Error::ToSmall);
@@ -84,6 +106,7 @@ impl Hook {
         Ok(Self { src, len, orig_bytes, active: true })
     }
 
+    /// Unhooks the function.
     pub fn unhook(&mut self) -> Result<()> {
         if !self.active {
             return Ok(());
@@ -121,6 +144,7 @@ impl Hook {
         Ok(())
     }
 
+    /// Returns the state of this hook.
     pub fn active(&self) -> bool {
         self.active
     }
@@ -136,6 +160,13 @@ unsafe impl Sync for Hook { }
 unsafe impl Send for Hook { }
 
 impl TrampolineHook {
+    /// Hooks a function and allocates a gateway with the overridden bytes.
+    ///
+    /// `src` is the function to be hooked.
+    ///
+    /// `dst` is the destination of the hook.
+    ///
+    /// `len` is the amount of bytes that should be overridden.
     pub fn hook(src: *mut c_void, dst: *mut c_void, len: usize) -> Result<Self> {
         if len < JMP_SIZE {
             return Err(Error::ToSmall);
@@ -189,6 +220,7 @@ impl TrampolineHook {
         Ok(Self { gateway, hook })
     }
 
+    /// Unhooks the function and deallocates the gateway.
     pub fn unhook(&mut self) -> Result<()> {
         if !self.active() {
             return Ok(());
@@ -199,10 +231,12 @@ impl TrampolineHook {
         Ok(())
     }
 
+    /// Returns the state of this hook.
     pub fn active(&self) -> bool {
         self.hook.active()
     }
 
+    /// Returns the allocated gateway of this hook.
     pub fn gateway(&self) -> *mut c_void {
         self.gateway
     }
