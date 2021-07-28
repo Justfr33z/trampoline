@@ -132,6 +132,9 @@ impl Drop for Hook {
     }
 }
 
+unsafe impl Sync for Hook { }
+unsafe impl Send for Hook { }
+
 impl TrampolineHook {
     pub fn hook(src: *mut c_void, dst: *mut c_void, len: usize) -> Result<Self> {
         if len < JMP_SIZE {
@@ -210,3 +213,6 @@ impl Drop for TrampolineHook {
         let _ = self.unhook();
     }
 }
+
+unsafe impl Sync for TrampolineHook { }
+unsafe impl Send for TrampolineHook { }
