@@ -9,7 +9,7 @@ mod bindings {
 }
 
 #[cfg(target_pointer_width = "32")]
-const JMP_MIN: usize = 5;
+const JMP_SIZE: usize = 5;
 
 #[cfg(target_pointer_width = "64")]
-const JMP_MIN: usize = 14;
+const JMP_SIZE: usize = 14;
