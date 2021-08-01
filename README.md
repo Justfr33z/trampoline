@@ -1,5 +1,7 @@
 # trampoline
 
+[![version](https://img.shields.io/crates/v/trampoline.svg)](https://crates.io/crates/trampoline/)
+
 `trampoline` is a function hooking library that supports both 32 and 64 bit.
 
 ## Example
