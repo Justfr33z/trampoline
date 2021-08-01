@@ -19,6 +19,37 @@ use std::ptr::{copy_nonoverlapping, write_bytes};
 /// The function will be unhooked when the value is dropped.
 ///
 /// [`hook`]: #method.hook
+///
+/// # Examples
+///
+/// ```no_run
+/// use crate::bindings::Windows::Win32::Foundation::{HANDLE, BOOL};
+/// use crate::bindings::Windows::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
+/// use std::ffi::c_void;
+/// use std::mem::transmute;
+/// use trampoline::Hook;
+///
+/// mod bindings {
+///     windows::include_bindings!();
+/// }
+///
+/// pub extern "stdcall" fn wgl_swap_buffers(hdc: HANDLE) -> BOOL {
+///     BOOL::from(true)
+/// }
+///
+/// fn main() {
+///     let module = unsafe { GetModuleHandleA("opengl32.dll") };
+///     let src_wgl_swap_buffers = unsafe {
+///         GetProcAddress(module, "wglSwapBuffers")
+///     }.unwrap();
+///
+///     let hook = Hook::hook(
+///         src_wgl_swap_buffers as *mut c_void,
+///         wgl_swap_buffers as *mut c_void,
+///         21
+///     ).unwrap();
+/// }
+/// ```
 pub struct Hook {
     src: *mut c_void,
     len: usize,
@@ -34,6 +65,58 @@ pub struct Hook {
 /// The function will be unhooked when the value is dropped.
 ///
 /// [`hook`]: #method.hook
+///
+/// # Examples
+///
+/// ```no_run
+/// use crate::bindings::Windows::Win32::Foundation::{HANDLE, BOOL};
+/// use crate::bindings::Windows::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
+/// use std::ffi::c_void;
+/// use std::sync::Mutex;
+/// use std::mem::transmute;
+/// use once_cell::sync::Lazy;
+/// use trampoline::TrampolineHook;
+///
+/// mod bindings {
+///     windows::include_bindings!();
+/// }
+///
+/// static HOOK: Lazy<Mutex<Option<TrampolineHook>>> = Lazy::new(|| {
+///     Mutex::new(None)
+/// });
+///
+/// pub extern "stdcall" fn wgl_swap_buffers(hdc: HANDLE) -> BOOL {
+///     let gateway = HOOK
+///         .lock()
+///         .unwrap()
+///         .as_ref()
+///         .unwrap()
+///         .gateway();
+///
+///     let gateway_call: extern "stdcall" fn(hdc: HANDLE) -> BOOL;
+///     gateway_call = unsafe { transmute(gateway) };
+///     gateway_call(hdc);
+///
+///     BOOL::from(true)
+/// }
+///
+/// fn main() {
+///     let module = unsafe { GetModuleHandleA("opengl32.dll") };
+///     let src_wgl_swap_buffers = unsafe {
+///         GetProcAddress(module, "wglSwapBuffers")
+///     }.unwrap();
+///
+///     let hook = TrampolineHook::hook(
+///         src_wgl_swap_buffers as *mut c_void,
+///         wgl_swap_buffers as *mut c_void,
+///         21
+///     ).unwrap();
+///
+///     *HOOK
+///         .lock()
+///         .unwrap() = Some(hook);
+/// }
+/// ```
 pub struct TrampolineHook {
     gateway: *mut c_void,
     hook: Hook,
