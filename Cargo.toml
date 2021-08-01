@@ -2,6 +2,8 @@
 name = "trampoline"
 version = "0.1.0"
 edition = "2018"
+description = "A Rust library for function hooking that supports both 32 and 64 bit."
+documentation = "https://justfr33z.github.io/trampoline-docs"
 readme = "README.md"
 repository = "https://github.com/Justfr33z/trampoline/"
 license = "MIT"
